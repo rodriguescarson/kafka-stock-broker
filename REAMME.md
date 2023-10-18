@@ -65,3 +65,84 @@ The typical workflow involving Athena and Glue Crawler looks like this:
 4. **Query with Amazon Athena**: You can use Athena to run SQL queries on the cataloged data. Athena leverages the metadata and schema information created by the Glue Crawler to make querying the data in S3 simple.
 
 This combination of services makes it easy to discover and query data in Amazon S3 without the need for a separate data warehousing solution. It's particularly useful for data analytics, business intelligence, and other scenarios where you need to analyze and gain insights from large datasets.
+
+Certainly, here's an improved and organized set of commands for setting up Apache Kafka on AWS EC2 instance:
+
+1. **Download and Extract Kafka:**
+
+   ```bash
+   wget https://downloads.apache.org/kafka/3.3.1/kafka_2.12-3.4.1.tgz
+   tar -xvf kafka_2.12-3.4.1.tgz
+   ```
+
+2. **Check and Install Java (Amazon Corretto 11):**
+
+   ```bash
+   java -version
+   sudo yum install java-1.8.0-openjdk
+   java -version
+   ```
+
+3. **Navigate to Kafka Directory:**
+
+   ```bash
+   cd kafka_2.12-3.4.1
+   ```
+
+4. **Start Zookeeper (First Console):**
+
+   ```bash
+   bin/zookeeper-server-start.sh config/zookeeper.properties
+   ```
+
+5. **Open Another Console Window and SSH to Your EC2 Instance.**
+
+6. **Start Kafka Server (Second Console):**
+
+   ```bash
+   # Duplicate the session & enter in a new console
+   export KAFKA_HEAP_OPTS="-Xmx256M -Xms128M"
+   cd kafka_2.12-3.4.1
+   bin/kafka-server-start.sh config/server.properties
+   ```
+
+7. **Point Kafka to Public IP (Second Console):**
+
+   - To make Kafka accessible via a public IP, you can do one of the following:
+
+     - Option 1: Edit `server.properties`:
+
+       ```bash
+       sudo nano config/server.properties
+       # Change ADVERTISED_LISTENERS to the public IP of the EC2 instance
+       ```
+
+     - Option 2: Include in your commands:
+       ```bash
+       export KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://<Public_IP>:9092"
+       ```
+
+8. **Create a Kafka Topic (Third Console):**
+
+   ```bash
+   # Duplicate the session & enter in a new console
+   cd kafka_2.12-3.4.1
+   bin/kafka-topics.sh --create --topic demo_testing2 --bootstrap-server <Public_IP_of_EC2>:9092 --replication-factor 1 --partitions 1
+   ```
+
+9. **Start Kafka Producer (Fourth Console):**
+
+   ```bash
+   bin/kafka-console-producer.sh --topic demo_testing2 --bootstrap-server <Public_IP_of_EC2>:9092
+   ```
+
+10. **Start Kafka Consumer (Fifth Console):**
+    ```bash
+    # Duplicate the session & enter in a new console
+    cd kafka_2.12-3.4.1
+    bin/kafka-console-consumer.sh --topic demo_testing2 --bootstrap-server <Public_IP_of_EC2>:9092
+    ```
+
+These organized commands should help you set up Kafka more effectively on your EC2 instance, ensuring it's accessible via a public IP address. Remember to replace `<Public_IP_of_EC2>` with the actual public IP of your AWS EC2 instance.
+
+This setup allows you to create a Kafka topic, produce messages, and consume them via separate console windows. It's a step-by-step guide for a smoother setup and operation.
